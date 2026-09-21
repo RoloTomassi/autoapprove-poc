@@ -1,0 +1,19 @@
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    branches: [main]
+
+jobs:
+  autoapprove:
+    uses: RoloTomassi/autoapprove-workflows/.github/workflows/autoapprove.yml@main
+    with:
+      whitelist: |
+        dev/
+        int/
+      blacklist: |
+        stg/
+        prd/
+      merge: false
+    secrets:
+      APPROVER_APP_ID: ${{ secrets.GH_YAMLMERGE_BOT_ID }}
+      APPROVER_APP_PRIVATE_KEY: ${{ secrets.GH_YAMLMERGE_BOT_PRIVATE_KEY }}
