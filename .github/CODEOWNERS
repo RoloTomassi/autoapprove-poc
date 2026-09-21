@@ -1,2 +1,8 @@
-/stg/ @ShinjiNakamoto-fd
-/prd/ @ShinjiNakamoto-fd
+# CODEOWNERS is order-dependent: the LAST matching pattern wins.
+# The blanket rule below requires review on everything by default —
+# including any new top-level directory added later. The two exemption
+# lines after it carve out the paths the auto-approve bot already covers.
+# Do not reorder: the exemptions must stay below the blanket rule.
+* @ShinjiNakamoto-fd
+/dev/
+/int/
