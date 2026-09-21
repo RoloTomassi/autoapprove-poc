@@ -166,9 +166,16 @@ PR stays blocked, requiring `ShinjiNakamoto-fd`'s real review via CODEOWNERS
 ## Checklist for the friend's setup
 
 Given his bot is confirmed to also be a GitHub App (shows as `[bot]` in PR
-reviews), both root causes here are plausible independently:
+reviews), both root causes here were plausible independently — but one is
+now ruled out:
 
 - [ ] Is `Require review from Code Owners` enabled, and does his CODEOWNERS
-      use a blanket `*` (or any pattern matching dev/int paths)?
-- [ ] Does his bot's App installation have `Contents` permission, or only
-      `Pull requests`?
+      use a blanket `*` (or any pattern matching dev/int paths)? **Most
+      likely culprit** — his bug reproduces exactly what we saw in bug #2.
+- [x] ~~Does his bot's App installation have `Contents` permission, or only
+      `Pull requests`?~~ Checked: his App shows "Read and write access to
+      code and pull requests" — `Contents` ("code" in GitHub's App
+      permission UI) is already granted. Bug #3 is very likely **not** part
+      of his problem; his bot's approval should already count toward the
+      required-review number. The blanket CODEOWNERS pattern (bug #2) is
+      the much stronger suspect for his setup.
