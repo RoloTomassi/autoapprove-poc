@@ -148,6 +148,53 @@ updated installation permissions. Same as with the human case, the
 *existing* bot review recounted live — `reviewDecision` flipped to
 `"APPROVED"`, `mergeStateStatus` to `"CLEAN"`, no new PR needed.
 
+## Follow-up: blanket `*` CODEOWNERS with exemptions, instead of an allow-list
+
+The fix for bug #2 (scoping CODEOWNERS to only `/stg/` and `/prd/`) had a
+quiet side effect: any path CODEOWNERS doesn't explicitly list — a brand-new
+directory, root-level files, even `.github/` itself — silently falls back to
+the generic baseline (any write-access collaborator can approve it), not to
+"requires a specific reviewer." A team could add a new environment directory
+and never notice it wasn't actually gated the way they expected.
+
+**Better pattern:** invert it — blanket ownership by default, with explicit
+exemptions for the paths the bot already covers:
+
+```
+# CODEOWNERS is order-dependent: the LAST matching pattern wins.
+# The blanket rule below requires review on everything by default —
+# including any new top-level directory added later. The two exemption
+# lines after it carve out the paths the auto-approve bot already covers.
+# Do not reorder: the exemptions must stay below the blanket rule.
+* @ShinjiNakamoto-fd
+/dev/
+/int/
+```
+
+CODEOWNERS doesn't support `.gitignore`-style `!` negation, but it does
+support a pattern line with **no owner listed at all**. Combined with
+"last matching pattern in the file wins," a no-owner line after a broader
+rule functions as an exemption from it. New/unrecognized paths now default
+to **protected**, and this also closes the `.github/` gap noted above —
+changes to the bot's own workflow files or CODEOWNERS itself require
+`ShinjiNakamoto-fd`'s review again.
+
+Verified with three PRs:
+
+1. **Implementation (PR #12)** — needed `ShinjiNakamoto-fd`'s manual
+   approval, since `.github/CODEOWNERS` isn't in the bot's whitelist.
+2. **`dev/` still exempt (PR #13)** — bot approved, `CLEAN`/`APPROVED`,
+   unaffected by the change.
+3. **Brand-new `pre/` directory (PR #14, closed without merging — a
+   probe)** — bot submitted zero reviews (not in its whitelist), and the
+   page confirmed the block came from the new blanket rule specifically:
+
+   > Awaiting requested review from ShinjiNakamoto-fd
+   > ShinjiNakamoto-fd is a code owner
+
+   Proving new/unrecognized directories now require human review by
+   default, rather than silently passing on the generic baseline.
+
 ## Final confirmed behavior
 
 **`dev/`-only PR** — bot approves, review counts, no CODEOWNERS match,
@@ -179,3 +226,7 @@ now ruled out:
       of his problem; his bot's approval should already count toward the
       required-review number. The blanket CODEOWNERS pattern (bug #2) is
       the much stronger suspect for his setup.
+- [ ] Once his blanket pattern is fixed, consider recommending the
+      "blanket `*` with exemptions" pattern above instead of an explicit
+      allow-list — it fails safe (new paths default to requiring review)
+      rather than failing open.
