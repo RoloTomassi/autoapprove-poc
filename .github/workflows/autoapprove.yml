@@ -3,6 +3,10 @@ on:
     types: [opened, synchronize, reopened]
     branches: [main]
 
+permissions:
+  pull-requests: write
+  contents: read
+
 jobs:
   autoapprove:
     uses: RoloTomassi/autoapprove-workflows/.github/workflows/autoapprove.yml@main
